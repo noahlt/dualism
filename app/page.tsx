@@ -1,16 +1,10 @@
 "use client";
-import { Styles, css } from "@/styled-system/css";
-import {
-  Block,
-  FileDispatcher,
-  useFileReducer,
-  FileState,
-} from "./blocksReducer";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { css } from "@/styled-system/css";
+import { FileDispatcher, useFileReducer, FileState } from "./blocksReducer";
+import { useState } from "react";
 import { AllLanguages, Language, isLanguage } from "@/lib/lang";
-
-const blockBorderRadius = "10px";
-const styleBorder = "1px solid #aaa";
+import { BlockWidget } from "./BlockWidget";
+import { sourceCodeStyle } from "./styles";
 
 export default function Home() {
   const [file, dFile] = useFileReducer({ lang: "Bash", blocks: [] });
@@ -45,7 +39,7 @@ export default function Home() {
               padding: "5px",
               paddingRight: "8px",
               borderRadius: "5px",
-              border: styleBorder,
+              border: "1px solid #aaa",
             })}
             value={file.lang}
             onChange={(e) => {
@@ -86,6 +80,7 @@ function ToggleWidget({
   onToggle: () => void;
 }) {
   const selectedColor = "hsl(44, 77%, 83%)";
+  const styleBorder = "1px solid #aaa";
   return (
     <button className={css({ fontSize: "0.9em" })} onClick={onToggle}>
       <span
@@ -127,20 +122,14 @@ function commentPrefix(lang: Language) {
   }
 }
 
-const sourceCodeStyle = {
-  fontSize: "0.9em",
-  fontFamily: "'Source Code Pro', monospace",
-};
-
 function ExportSource({ file }: { file: FileState }) {
   return (
     <div
-      className={css({
+      className={css(sourceCodeStyle, {
         width: "100%",
         backgroundColor: "hsl(44, 0%, 96%)",
-        borderRadius: blockBorderRadius,
+        borderRadius: "10px",
         padding: "10px",
-        ...sourceCodeStyle,
       })}
     >
       {file.blocks
@@ -173,7 +162,7 @@ function Notebook({ file, dFile }: { file: FileState; dFile: FileDispatcher }) {
         <button
           className={css({
             border: "2px dashed #eee",
-            borderRadius: blockBorderRadius,
+            borderRadius: "10px",
             padding: "10px",
             textAlign: "center",
             cursor: "pointer",
@@ -218,133 +207,5 @@ function Notebook({ file, dFile }: { file: FileState; dFile: FileDispatcher }) {
         </div>
       )}
     </>
-  );
-}
-
-function BlockWidget({
-  block,
-  lang,
-  dBlocks,
-}: {
-  block: Block;
-  lang: Language;
-  dBlocks: FileDispatcher;
-}) {
-  let code = block.code;
-  if (block.state === "generating-code" && block.code === "") {
-    code = "(generating...)";
-  }
-  let prose = block.prose;
-  if (block.state === "generating-prose" && block.prose === "") {
-    prose = "(generating...)";
-  }
-
-  const sharedTextareaCSS = {
-    width: "100%",
-    padding: "10px",
-    lineHeight: "1.2em",
-  };
-
-  return (
-    <div className={css({ lineHeight: 0 })}>
-      <DynamicTextarea
-        className={css({
-          ...sharedTextareaCSS,
-          backgroundColor: "hsl(44, 77%, 87%)",
-          borderRadius: "10px 10px 0 0",
-          color: `rgba(0, 0, 0, ${block.state !== "editing-code" ? 1 : 0.5})`,
-        })}
-        value={block.prose}
-        onChange={(e) =>
-          dBlocks({ type: "edit-prose", id: block.id, prose: e.target.value })
-        }
-        onKeyDown={async (e) => {
-          if (e.key === "Enter" && e.shiftKey) {
-            e.preventDefault();
-            dBlocks({ type: "finish-edit-prose", id: block.id });
-            const resp = await generate({ prose: block.prose, lang });
-            const data = await resp.json();
-            dBlocks({
-              type: "save-generated-code",
-              id: block.id,
-              code: data.code,
-            });
-          }
-        }}
-      />
-      <DynamicTextarea
-        className={css({
-          ...sharedTextareaCSS,
-          ...sourceCodeStyle,
-          backgroundColor: "hsl(44, 0%, 93%)",
-          borderRadius: "0 0 10px 10px",
-          paddingBottom: "20px",
-          color: `rgba(0, 0, 0, ${block.state !== "editing-prose" ? 1 : 0.5})`,
-        })}
-        value={code}
-        readOnly={block.state === "generating-code"}
-        onChange={(evt) => {
-          dBlocks({ type: "edit-code", id: block.id, code: evt.target.value });
-        }}
-        onKeyDown={async (e) => {
-          if (e.key === "Enter" && e.shiftKey) {
-            e.preventDefault();
-            dBlocks({ type: "finish-edit-code", id: block.id });
-            const resp = await generate({ code: block.code, lang });
-            const data = await resp.json();
-            dBlocks({
-              type: "save-generated-prose",
-              id: block.id,
-              prose: data.prose,
-            });
-          }
-        }}
-      />
-    </div>
-  );
-}
-
-async function generate(data: unknown) {
-  return fetch("/i/generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-}
-
-interface DynamicTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
-}
-
-function DynamicTextarea({
-  value,
-  onChange,
-  className,
-  ...props
-}: DynamicTextareaProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = textarea.scrollHeight + "px";
-    }
-  }, [value]);
-
-  return (
-    <textarea
-      ref={textareaRef}
-      style={{ resize: "none" }}
-      className={className}
-      value={value}
-      rows={1}
-      onChange={(evt) => {
-        const elt = evt.target;
-        elt.style.height = elt.scrollHeight + "px";
-        if (onChange) onChange(evt);
-      }}
-      {...props}
-    ></textarea>
   );
 }
