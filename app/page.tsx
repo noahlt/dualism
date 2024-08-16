@@ -1,5 +1,5 @@
 "use client";
-import { css } from "@/styled-system/css";
+import { Styles, css } from "@/styled-system/css";
 import {
   Block,
   FileDispatcher,
@@ -22,7 +22,7 @@ export default function Home() {
     <div
       className={css({
         margin: "10px",
-        width: "900px",
+        maxWidth: "900px",
         color: "#333",
         alignItems: "center",
       })}
@@ -129,27 +129,27 @@ function commentPrefix(lang: Language) {
   }
 }
 
+const sourceCodeStyle = {
+  fontSize: "0.9em",
+  fontFamily: "'Source Code Pro', monospace",
+};
+
 function ExportSource({ file }: { file: FileState }) {
   return (
-    <div>
-      <textarea
-        className={css({
-          width: "100%",
-          height: "80vh",
-          fontSize: "0.9em",
-          fontFamily: "'Source Code Pro', monospace",
-          backgroundColor: "hsl(44, 0%, 96%)",
-          borderRadius: blockBorderRadius,
-          padding: "10px",
-        })}
-        value={file.blocks
-          .map(
-            (block) =>
-              commentPrefix(file.lang) + block.prose + "\n" + block.code,
-          )
-          .join("\n\n")}
-        readOnly
-      ></textarea>
+    <div
+      className={css({
+        width: "100%",
+        backgroundColor: "hsl(44, 0%, 96%)",
+        borderRadius: blockBorderRadius,
+        padding: "10px",
+        ...sourceCodeStyle,
+      })}
+    >
+      {file.blocks
+        .map(
+          (block) => commentPrefix(file.lang) + block.prose + "\n" + block.code,
+        )
+        .join("\n\n")}
     </div>
   );
 }
@@ -241,64 +241,48 @@ function BlockWidget({
     prose = "(generating...)";
   }
 
+  const sharedTextareaCSS = {
+    width: "100%",
+    padding: "10px",
+    lineHeight: "1.2em",
+  };
+
   return (
     <div className={css({ lineHeight: 0 })}>
       <DynamicTextarea
-        className={css({
-          width: "100%",
+        css={{
+          ...sharedTextareaCSS,
           backgroundColor: "hsl(44, 77%, 87%)",
           borderRadius: "10px 10px 0 0",
-          padding: "10px",
-          lineHeight: "1.2em",
-          color:
-            block.state !== "editing-code"
-              ? "rgba(0, 0, 0, 1)"
-              : "rgba(0, 0, 0, 0.5)",
-
-          WebkitAppearance: "none",
-        })}
+          color: `rgba(0, 0, 0, ${block.state !== "editing-code" ? 1 : 0.5})`,
+        }}
         value={block.prose}
         onChange={(e) =>
           dBlocks({ type: "edit-prose", id: block.id, prose: e.target.value })
         }
         onKeyDown={async (e) => {
-          if (e.key === "Enter") {
-            if (e.shiftKey) {
-              dBlocks({
-                type: "edit-prose",
-                id: block.id,
-                prose: block.prose + "\n",
-              });
-            } else {
-              e.preventDefault();
-              dBlocks({ type: "finish-edit-prose", id: block.id });
-              const resp = await generate({ prose: block.prose, lang });
-              const data = await resp.json();
-              dBlocks({
-                type: "save-generated-code",
-                id: block.id,
-                code: data.code,
-              });
-            }
+          if (e.key === "Enter" && e.shiftKey) {
+            e.preventDefault();
+            dBlocks({ type: "finish-edit-prose", id: block.id });
+            const resp = await generate({ prose: block.prose, lang });
+            const data = await resp.json();
+            dBlocks({
+              type: "save-generated-code",
+              id: block.id,
+              code: data.code,
+            });
           }
         }}
       />
       <DynamicTextarea
-        className={css({
-          width: "100%",
-          height: "auto",
-          fontSize: "0.9em",
-          fontFamily: "'Source Code Pro', monospace",
-          lineHeight: "1.2em",
+        css={{
+          ...sharedTextareaCSS,
+          ...sourceCodeStyle,
           backgroundColor: "hsl(44, 0%, 93%)",
           borderRadius: "0 0 10px 10px",
-          padding: "10px",
           paddingBottom: "20px",
-          color:
-            block.state !== "editing-prose"
-              ? "rgba(0, 0, 0, 1)"
-              : "rgba(0, 0, 0, 0.5)",
-        })}
+          color: `rgba(0, 0, 0, ${block.state !== "editing-prose" ? 1 : 0.5})`,
+        }}
         value={code}
         readOnly={block.state === "generating-code"}
         onChange={(evt) => {
@@ -333,12 +317,13 @@ async function generate(data: unknown) {
 interface DynamicTextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+  css: Styles;
 }
 
 function DynamicTextarea({
   value,
   onChange,
-  className,
+  css: cssProp = {},
   ...props
 }: DynamicTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -353,7 +338,12 @@ function DynamicTextarea({
   return (
     <textarea
       ref={textareaRef}
-      className={className}
+      className={css(
+        {
+          resize: "none",
+        },
+        cssProp,
+      )}
       value={value}
       rows={1}
       onChange={(evt) => {
