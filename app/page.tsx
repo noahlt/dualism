@@ -248,12 +248,12 @@ function BlockWidget({
   return (
     <div className={css({ lineHeight: 0 })}>
       <DynamicTextarea
-        css={{
+        className={css({
           ...sharedTextareaCSS,
           backgroundColor: "hsl(44, 77%, 87%)",
           borderRadius: "10px 10px 0 0",
           color: `rgba(0, 0, 0, ${block.state !== "editing-code" ? 1 : 0.5})`,
-        }}
+        })}
         value={block.prose}
         onChange={(e) =>
           dBlocks({ type: "edit-prose", id: block.id, prose: e.target.value })
@@ -273,14 +273,14 @@ function BlockWidget({
         }}
       />
       <DynamicTextarea
-        css={{
+        className={css({
           ...sharedTextareaCSS,
           ...sourceCodeStyle,
           backgroundColor: "hsl(44, 0%, 93%)",
           borderRadius: "0 0 10px 10px",
           paddingBottom: "20px",
           color: `rgba(0, 0, 0, ${block.state !== "editing-prose" ? 1 : 0.5})`,
-        }}
+        })}
         value={code}
         readOnly={block.state === "generating-code"}
         onChange={(evt) => {
@@ -315,13 +315,12 @@ async function generate(data: unknown) {
 interface DynamicTextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
-  css: Styles;
 }
 
 function DynamicTextarea({
   value,
   onChange,
-  css: cssProp = {},
+  className,
   ...props
 }: DynamicTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -336,12 +335,8 @@ function DynamicTextarea({
   return (
     <textarea
       ref={textareaRef}
-      className={css(
-        {
-          resize: "none",
-        },
-        cssProp,
-      )}
+      style={{ resize: "none" }}
+      className={className}
       value={value}
       rows={1}
       onChange={(evt) => {
