@@ -1,3 +1,4 @@
+import { isLanguage } from "@/lib/lang";
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 
@@ -5,8 +6,15 @@ const anthropic = new Anthropic();
 
 export async function POST(request: Request) {
   const req = await request.json();
-  const lang = req.lang || "typescript";
-  const style = lang === "typescript" ? " in a functional style" : ""; // hack lol
+  const lang = req.lang || "Typescript";
+  if (!isLanguage(lang)) {
+    return Response.json({ error: "Invalid language" }, { status: 400 });
+  }
+  // this is a silly hack but it does help, I think
+  const style =
+    lang === "Typescript" || lang === "Javascript"
+      ? " in a functional style"
+      : "";
   let msgs;
   if (req.prose) {
     msgs = await anthropic.messages.create({

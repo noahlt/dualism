@@ -1,3 +1,4 @@
+import { Language } from "@/lib/lang";
 import { Reducer, useReducer } from "react";
 
 export const INERT = "inert";
@@ -46,12 +47,6 @@ export type Block = {
   code: string;
   state: BlockState;
 };
-
-export type Language = "Bash" | "Python" | "Typescript";
-export const LANGUAGES = ["Bash", "Python", "Typescript"] as const;
-export function isLanguage(lang: string): lang is Language {
-  return LANGUAGES.includes(lang as Language);
-}
 
 export type FileState = { lang: Language; blocks: Block[] };
 

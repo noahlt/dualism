@@ -4,12 +4,10 @@ import {
   Block,
   FileDispatcher,
   useFileReducer,
-  LANGUAGES,
-  isLanguage,
-  Language,
   FileState,
 } from "./blocksReducer";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { AllLanguages, Language, isLanguage } from "@/lib/lang";
 
 const blockBorderRadius = "10px";
 const styleBorder = "1px solid #aaa";
@@ -57,7 +55,7 @@ export default function Home() {
               }
             }}
           >
-            {LANGUAGES.map((lang) => (
+            {AllLanguages.map((lang) => (
               <option key={lang} value={lang}>
                 {lang}
               </option>
