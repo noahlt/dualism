@@ -66,7 +66,7 @@ export function BlockWidget({
           dBlocks({ type: "edit-prose", id: block.id, prose: e.target.value })
         }
         onKeyDown={async (e) => {
-          if (e.key === "Enter" && e.shiftKey) {
+          if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             dBlocks({ type: "finish-edit-prose", id: block.id });
             const resp = await generate({ prose: block.prose, lang });
