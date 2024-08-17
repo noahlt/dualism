@@ -46,12 +46,12 @@ export default function About() {
         When generating code with ChatGPT and Claude, I often iterate on the
         same code multiple times before copying it into my actual source code.
         The chat interface here is kind of clunky, I end up repeatedly typing
-        things like "that's good but now make it handle this edge case".
+        things like “that’s good but now make it handle this edge case”.
       </P>
       <P>
         Conversely, when generating code in Copilot, Cursor, and Colab, I end up
-        using comments as prompts, and I find I'm not too attached to the code
-        it generates. When I need to change the generated code, I'd rather just
+        using comments as prompts, and I find I’m not too attached to the code
+        it generates. When I need to change the generated code, I’d rather just
         adjust the prompt and regenerate.
       </P>
       <P>
@@ -60,7 +60,7 @@ export default function About() {
       </P>
       <P>
         Dualism also does away with the chat interface. No more asking ChatGPT
-        to "please generate code to […]". It also provides an export view, which
+        to “please generate code to […]”. It also provides an export view, which
         formats your prompts as code comments.
       </P>
       <P>
@@ -77,7 +77,7 @@ export default function About() {
 
       <h2 className={h2Class}>Limitations &amp; Future work</h2>
       <P>
-        This is just a prototype. I find it's good enough to write shell scripts
+        This is just a prototype. I find it’s good enough to write shell scripts
         (which was my original motivation), but it has many limitations and room
         for improvement:
       </P>
@@ -105,7 +105,7 @@ export default function About() {
         </li>
       </ul>
       <P>
-        If you're interested in tinkering, check out{" "}
+        If you’re interested in tinkering, check out{" "}
         <a className={css(linkColor)} href="https://github.com/noahlt/dualism">
           Dualism on GitHub
         </a>
@@ -113,7 +113,7 @@ export default function About() {
       </P>
       <h2 className={h2Class}>About me</h2>
       <P>
-        I'm Noah Tye. I love programming tools and I'm frustrated that the
+        I’m Noah Tye. I love programming tools and I’m frustrated that the
         chatbot paradigm is so common for LLMs.
       </P>
       <P>
