@@ -6,10 +6,11 @@ import {
   FileState,
   makeInitFileState,
 } from "./blocksReducer";
-import { useState } from "react";
+import { ChangeEventHandler, useState } from "react";
 import { AllLanguages, Language, isLanguage } from "@/lib/lang";
 import { BlockWidget } from "./BlockWidget";
-import { sourceCodeStyle } from "./styles";
+import { linkColor, sourceCodeStyle } from "./styles";
+import Link from "next/link";
 
 export default function Home() {
   const [file, dFile] = useFileReducer(makeInitFileState());
@@ -23,43 +24,42 @@ export default function Home() {
         alignItems: "center",
       })}
     >
-      <div className={css({ display: "flex", gap: "10px", marginTop: "10px" })}>
+      <div
+        className={css({
+          display: "flex",
+          gap: "10px",
+          marginTop: "10px",
+          alignItems: "baseline",
+        })}
+      >
         <div
           className={css({
             fontSize: "2xl",
             fontWeight: "bold",
             marginLeft: "8px",
             marginBottom: "10px",
-            flexGrow: 1,
           })}
         >
           Dualism
         </div>
-        <div className={css({ display: "flex", alignItems: "center" })}>
-          <select
-            className={css({
-              height: "auto",
-              fontSize: "0.9em",
-              padding: "2px",
-              paddingRight: "8px",
-              borderRadius: "5px",
-              border: "1px solid #aaa",
-            })}
-            value={file.lang}
-            onChange={(e) => {
-              const lang = e.target.value;
-              if (isLanguage(lang)) {
-                dFile({ type: "switch-language", lang });
-              }
-            }}
-          >
-            {AllLanguages.map((lang) => (
-              <option key={lang} value={lang}>
-                {lang}
-              </option>
-            ))}
-          </select>
+        <div>
+          <Link href="/about" className={navLinkStyles}>
+            About
+          </Link>
         </div>
+        <div>
+          <a href="https://github.com/noahlt/dualism" className={navLinkStyles}>
+            GitHub
+          </a>
+        </div>
+        <div className={css({ flexGrow: 1 })} />
+        <LanguageSelector
+          value={file.lang}
+          onChange={(e) => {
+            const lang = e.target.value;
+            if (isLanguage(lang)) dFile({ type: "switch-language", lang });
+          }}
+        />
         <ToggleWidget
           mode={mode}
           onToggle={() =>
@@ -72,6 +72,41 @@ export default function Home() {
       ) : (
         <ExportSource file={file} />
       )}
+    </div>
+  );
+}
+
+const navLinkStyles = css(linkColor, {
+  _hover: { borderBottom: "2px solid #6996f0" },
+});
+
+function LanguageSelector({
+  value,
+  onChange,
+}: {
+  value: Language;
+  onChange: ChangeEventHandler<HTMLSelectElement>;
+}) {
+  return (
+    <div className={css({ display: "flex", alignItems: "center" })}>
+      <select
+        className={css({
+          height: "auto",
+          fontSize: "0.9em",
+          padding: "2px",
+          paddingRight: "8px",
+          borderRadius: "5px",
+          border: "1px solid #aaa",
+        })}
+        value={value}
+        onChange={onChange}
+      >
+        {AllLanguages.map((lang) => (
+          <option key={lang} value={lang}>
+            {lang}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

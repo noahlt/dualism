@@ -5,3 +5,7 @@ export const sourceCodeStyle = css.raw({
   fontFamily: "'Source Code Pro', monospace",
   whiteSpace: "pre-wrap",
 });
+
+export const linkColor = css.raw({
+  color: "#0048d6",
+});

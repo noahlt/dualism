@@ -15,7 +15,7 @@ Conversely, you can edit the code directly and then regenerate the prose, at whi
 
 This is just a prototype. It has many limitations and room for improvement:
 
-- the code is structured as a series of pairs, when really it should be a tree of pairs. You should be able to generate a looping construct and then add prompt/code pairs as child nodes of the loop.
+- the code is structured as a list of pairs, when really it should be a tree of pairs. You should be able to generate a looping construct and then add prompt/code pairs as child nodes of the loop.
 - many many basic editor features are missing, such as selecting entire blocks, inserting blocks between others (rather than just appending), etc
 - the UI actually allows you to switch languages after you've already generated some code. It would be cool if switching languages regenerated all the code in the new language.
 - ideally the prompt for each code block would include all surrounding code so that, eg, the LLM knew what variables are in scope.
