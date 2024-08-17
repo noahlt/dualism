@@ -72,6 +72,22 @@ function makeID(prefix: string): string {
   return `${prefix}_${result}`;
 }
 
+function makeNewBlock(): Block {
+  return {
+    id: makeID("b"),
+    prose: "",
+    code: "",
+    state: INERT,
+  };
+}
+
+export function makeInitFileState(): FileState {
+  return {
+    lang: "Typescript",
+    blocks: [makeNewBlock()],
+  };
+}
+
 // Reducer function
 const fileReducer: Reducer<FileState, FileAction> = (
   state: FileState,
@@ -85,13 +101,7 @@ const fileReducer: Reducer<FileState, FileAction> = (
       return EXAMPLE_BLOCKS;
 
     case "create-block":
-      const newBlock = {
-        id: makeID("b"),
-        prose: "",
-        code: "",
-        state: "inert" as const,
-      };
-      return { ...state, blocks: [...state.blocks, newBlock] };
+      return { ...state, blocks: [...state.blocks, makeNewBlock()] };
 
     case "edit-prose":
       return {
@@ -136,21 +146,45 @@ const fileReducer: Reducer<FileState, FileAction> = (
     case "save-generated-prose":
       return {
         ...state,
-        blocks: state.blocks.map((block) =>
-          block.id === action.id
-            ? { ...block, prose: action.prose, state: INERT }
-            : block,
-        ),
+        blocks: state.blocks.flatMap((block, index) => {
+          if (block.id === action.id) {
+            const nextBlock: Block = {
+              ...block,
+              prose: action.prose,
+              state: INERT,
+            };
+            const isLast = index === state.blocks.length - 1;
+            if (isLast) {
+              return [nextBlock, makeNewBlock()];
+            } else {
+              return [nextBlock];
+            }
+          } else {
+            return [block];
+          }
+        }),
       };
 
     case "save-generated-code":
       return {
         ...state,
-        blocks: state.blocks.map((block) =>
-          block.id === action.id
-            ? { ...block, code: action.code, state: INERT }
-            : block,
-        ),
+        blocks: state.blocks.flatMap((block, index) => {
+          if (block.id === action.id) {
+            const nextBlock: Block = {
+              ...block,
+              code: action.code,
+              state: INERT,
+            };
+            const isLast = index === state.blocks.length - 1;
+            if (isLast) {
+              return [nextBlock, makeNewBlock()];
+            } else {
+              return [nextBlock];
+            }
+          } else {
+            return [block];
+          }
+        }),
       };
 
     default:

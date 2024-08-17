@@ -1,25 +1,29 @@
 "use client";
 import { css } from "@/styled-system/css";
-import { FileDispatcher, useFileReducer, FileState } from "./blocksReducer";
+import {
+  FileDispatcher,
+  useFileReducer,
+  FileState,
+  makeInitFileState,
+} from "./blocksReducer";
 import { useState } from "react";
 import { AllLanguages, Language, isLanguage } from "@/lib/lang";
 import { BlockWidget } from "./BlockWidget";
 import { sourceCodeStyle } from "./styles";
 
 export default function Home() {
-  const [file, dFile] = useFileReducer({ lang: "Bash", blocks: [] });
+  const [file, dFile] = useFileReducer(makeInitFileState());
   const [mode, setMode] = useState<"notebook" | "export-source">("notebook");
 
   return (
     <div
       className={css({
-        margin: "10px",
         maxWidth: "900px",
         color: "#333",
         alignItems: "center",
       })}
     >
-      <div className={css({ display: "flex", gap: "10px" })}>
+      <div className={css({ display: "flex", gap: "10px", marginTop: "10px" })}>
         <div
           className={css({
             fontSize: "2xl",
@@ -31,12 +35,12 @@ export default function Home() {
         >
           Dualism
         </div>
-        <div className={css({ paddingTop: "7px" })}>
+        <div className={css({ display: "flex", alignItems: "center" })}>
           <select
             className={css({
               height: "auto",
               fontSize: "0.9em",
-              padding: "5px",
+              padding: "2px",
               paddingRight: "8px",
               borderRadius: "5px",
               border: "1px solid #aaa",
@@ -79,7 +83,8 @@ function ToggleWidget({
   mode: "notebook" | "export-source"; // yeah this is silly and not general but hey it's a prototype
   onToggle: () => void;
 }) {
-  const selectedColor = "hsl(44, 77%, 83%)";
+  // const selectedColor = "#729cef";
+  const selectedColor = "#436ce3";
   const styleBorder = "1px solid #aaa";
   return (
     <button className={css({ fontSize: "0.9em" })} onClick={onToggle}>
@@ -89,6 +94,7 @@ function ToggleWidget({
           borderRadius: "5px 0 0 5px",
           py: "3px",
           px: "8px",
+          color: mode === "notebook" ? "#fff" : "#333",
           backgroundColor: mode === "notebook" ? selectedColor : "#fff",
         })}
       >
@@ -102,6 +108,7 @@ function ToggleWidget({
           borderRadius: "0 5px 5px 0",
           py: "3px",
           px: "8px",
+          color: mode === "export-source" ? "#fff" : "#333",
           backgroundColor: mode === "export-source" ? selectedColor : "#fff",
         })}
       >
@@ -144,13 +151,7 @@ function ExportSource({ file }: { file: FileState }) {
 function Notebook({ file, dFile }: { file: FileState; dFile: FileDispatcher }) {
   return (
     <>
-      <div
-        className={css({
-          display: "flex",
-          flexDir: "column",
-          gap: "10px",
-        })}
-      >
+      <div className={css({ display: "flex", flexDir: "column" })}>
         {file.blocks.map((block) => (
           <BlockWidget
             key={block.id}
@@ -159,26 +160,6 @@ function Notebook({ file, dFile }: { file: FileState; dFile: FileDispatcher }) {
             dBlocks={dFile}
           />
         ))}
-        <button
-          className={css({
-            border: "2px dashed #eee",
-            borderRadius: "10px",
-            padding: "10px",
-            textAlign: "center",
-            cursor: "pointer",
-            color: "#aaa",
-            _hover: {
-              color: "#333",
-            },
-            _active: {
-              color: "#333",
-              backgroundColor: "#f9f9f9",
-            },
-          })}
-          onClick={() => dFile({ type: "create-block" })}
-        >
-          Add block
-        </button>
       </div>
       {file.blocks.length === 0 && (
         <div className={css({ textAlign: "right", marginTop: "10px" })}>

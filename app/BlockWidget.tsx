@@ -3,6 +3,7 @@ import { DynamicTextarea } from "./DynamicTextarea";
 import { Block, FileDispatcher } from "./blocksReducer";
 import { css } from "@/styled-system/css";
 import { sourceCodeStyle } from "./styles";
+import { useState } from "react";
 
 export function BlockWidget({
   block,
@@ -13,6 +14,8 @@ export function BlockWidget({
   lang: Language;
   dBlocks: FileDispatcher;
 }) {
+  const [focused, setFocused] = useState(false);
+
   let code = block.code;
   if (block.state === "generating-code" && block.code === "") {
     code = "(generating...)";
@@ -24,20 +27,41 @@ export function BlockWidget({
 
   const sharedTextareaCSS = {
     width: "100%",
-    padding: "10px",
+    paddingTop: "5px",
+    paddingLeft: "32px",
     lineHeight: "1.2em",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "left 10px top 9px",
+    _focus: { outline: "none" },
   };
 
   return (
-    <div className={css({ lineHeight: 0 })}>
+    <div
+      className={css({
+        borderTop: "1px solid #eee",
+        lineHeight: 0,
+        position: "relative",
+      })}
+    >
+      {focused && (
+        <div
+          className={css({
+            backgroundColor: "#729cef",
+            position: "absolute",
+            top: 0,
+            left: "-5px",
+            width: "10px",
+            height: "100%",
+            borderRadius: "5px",
+          })}
+        />
+      )}
       <DynamicTextarea
-        className={css({
-          ...sharedTextareaCSS,
-          backgroundColor: "hsl(44, 77%, 87%)",
-          borderRadius: "10px 10px 0 0",
+        className={css(sharedTextareaCSS, {
+          backgroundImage: "url('/prose-icon.svg')",
           color: `rgba(0, 0, 0, ${block.state !== "editing-code" ? 1 : 0.5})`,
         })}
-        value={block.prose}
+        value={prose}
         onChange={(e) =>
           dBlocks({ type: "edit-prose", id: block.id, prose: e.target.value })
         }
@@ -54,11 +78,13 @@ export function BlockWidget({
             });
           }
         }}
+        placeholder="prompt for code..."
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
       />
       <DynamicTextarea
         className={css(sharedTextareaCSS, sourceCodeStyle, {
-          backgroundColor: "hsl(44, 0%, 93%)",
-          borderRadius: "0 0 10px 10px",
+          backgroundImage: "url('/code-icon.svg')",
           paddingBottom: "20px",
           color: `rgba(0, 0, 0, ${block.state !== "editing-prose" ? 1 : 0.5})`,
         })}
@@ -80,6 +106,8 @@ export function BlockWidget({
             });
           }
         }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
       />
     </div>
   );
