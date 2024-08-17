@@ -9,8 +9,9 @@ import {
 import { ChangeEventHandler, useState } from "react";
 import { AllLanguages, Language, isLanguage } from "@/lib/lang";
 import { BlockWidget } from "./BlockWidget";
-import { linkColor, sourceCodeStyle } from "./styles";
+import { linkColor } from "./styles";
 import Link from "next/link";
+import { ExportSource } from "./ExportSource";
 
 export default function Home() {
   const [file, dFile] = useFileReducer(makeInitFileState());
@@ -150,36 +151,6 @@ function ToggleWidget({
         Export
       </span>
     </button>
-  );
-}
-
-function commentPrefix(lang: Language) {
-  switch (lang) {
-    case "Bash":
-      return "# ";
-    case "Python":
-      return "# ";
-    case "Typescript":
-      return "// ";
-  }
-}
-
-function ExportSource({ file }: { file: FileState }) {
-  return (
-    <div
-      className={css(sourceCodeStyle, {
-        width: "100%",
-        backgroundColor: "hsl(44, 0%, 96%)",
-        borderRadius: "10px",
-        padding: "10px",
-      })}
-    >
-      {file.blocks
-        .map(
-          (block) => commentPrefix(file.lang) + block.prose + "\n" + block.code,
-        )
-        .join("\n\n")}
-    </div>
   );
 }
 
