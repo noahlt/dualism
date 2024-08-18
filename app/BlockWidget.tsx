@@ -5,6 +5,18 @@ import { css } from "@/styled-system/css";
 import { sourceCodeStyle } from "./styles";
 import { useState } from "react";
 
+import CodeMirror from "@uiw/react-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
+import { StreamLanguage } from "@codemirror/language";
+import { shell } from "@codemirror/legacy-modes/mode/shell";
+
+const cmExtensions = [
+  javascript({ jsx: true }),
+  python(),
+  StreamLanguage.define(shell),
+];
+
 export function BlockWidget({
   block,
   lang,
@@ -41,6 +53,7 @@ export function BlockWidget({
         borderTop: "1px solid #eee",
         lineHeight: 0,
         position: "relative",
+        paddingBottom: "10px",
       })}
     >
       {focused && (
@@ -82,7 +95,37 @@ export function BlockWidget({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
-      <DynamicTextarea
+      <CodeMirror
+        className="dualismtheme"
+        value={code}
+        height="auto"
+        readOnly={block.state === "generating-code"}
+        extensions={cmExtensions}
+        basicSetup={{
+          lineNumbers: false,
+          foldGutter: false,
+          highlightActiveLine: false,
+        }}
+        onChange={(val) => {
+          dBlocks({ type: "edit-code", id: block.id, code: val });
+        }}
+        onKeyDown={async (e) => {
+          if (e.key === "Enter" && e.shiftKey) {
+            e.preventDefault();
+            dBlocks({ type: "finish-edit-code", id: block.id });
+            const resp = await generate({ code: block.code, lang });
+            const data = await resp.json();
+            dBlocks({
+              type: "save-generated-prose",
+              id: block.id,
+              prose: data.prose,
+            });
+          }
+        }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+      />
+      {/* <DynamicTextarea
         className={css(sharedTextareaCSS, sourceCodeStyle, {
           backgroundImage: "url('/code-icon.svg')",
           paddingBottom: "20px",
@@ -108,7 +151,7 @@ export function BlockWidget({
         }}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-      />
+      /> */}
     </div>
   );
 }

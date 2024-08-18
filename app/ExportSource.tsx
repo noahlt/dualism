@@ -2,7 +2,7 @@ import { css } from "@/styled-system/css";
 import { sourceCodeStyle } from "./styles";
 import { Language } from "@/lib/lang";
 import { FileState } from "./blocksReducer";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { shell } from "@codemirror/legacy-modes/mode/shell";

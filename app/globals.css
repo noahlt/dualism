@@ -1,1 +1,24 @@
 @layer reset, base, tokens, recipes, utilities;
+
+.cm-editor {
+  font-family: "Source Code Pro", monospace;
+  font-size: 14px;
+}
+
+.cm-theme-light.dualismtheme {
+  padding-left: 21px;
+  left: 5px;
+
+  background-repeat: no-repeat;
+  background-position: left 10px top 9px;
+  background-image: url("/code-icon.svg");
+}
+
+.cm-editor {
+  background: transparent;
+  padding-left: 5px;
+}
+
+.cm-editor.cm-focused {
+  outline: none;
+}
