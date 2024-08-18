@@ -82,8 +82,7 @@ export function BlockWidget({
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             dBlocks({ type: "finish-edit-prose", id: block.id });
-            const resp = await generate({ prose: block.prose, lang });
-            const data = await resp.json();
+            const data = await generate({ prose: block.prose, lang });
             dBlocks({
               type: "save-generated-code",
               id: block.id,
@@ -113,8 +112,7 @@ export function BlockWidget({
           if (e.key === "Enter" && e.shiftKey) {
             e.preventDefault();
             dBlocks({ type: "finish-edit-code", id: block.id });
-            const resp = await generate({ code: block.code, lang });
-            const data = await resp.json();
+            const data = await generate({ code: block.code, lang });
             dBlocks({
               type: "save-generated-prose",
               id: block.id,
@@ -156,10 +154,11 @@ export function BlockWidget({
   );
 }
 
-async function generate(data: unknown) {
-  return fetch("/i/generate", {
+export async function generate(data: unknown) {
+  const resp = await fetch("/i/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
+  return resp.json();
 }

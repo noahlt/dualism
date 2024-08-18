@@ -8,7 +8,7 @@ import {
 } from "./blocksReducer";
 import { ChangeEventHandler, useState } from "react";
 import { AllLanguages, Language, isLanguage } from "@/lib/lang";
-import { BlockWidget } from "./BlockWidget";
+import { BlockWidget, generate } from "./BlockWidget";
 import { linkColor } from "./styles";
 import Link from "next/link";
 import { ExportSource } from "./ExportSource";
@@ -60,6 +60,12 @@ export default function Home() {
           onChange={(e) => {
             const lang = e.target.value;
             if (isLanguage(lang)) dFile({ type: "switch-language", lang });
+            file.blocks.forEach(async (block) => {
+              const id = block.id;
+              dFile({ type: "finish-edit-prose", id });
+              const data = await generate({ prose: block.prose, lang });
+              dFile({ type: "save-generated-code", id, code: data.code });
+            });
           }}
         />
         <ToggleWidget
