@@ -43,7 +43,7 @@ export function BlockWidget({
     paddingLeft: "32px",
     lineHeight: "1.2em",
     backgroundRepeat: "no-repeat",
-    backgroundPosition: "left 10px top 9px",
+    backgroundPosition: "left 11px top 9px",
     _focus: { outline: "none" },
   };
 

@@ -30,6 +30,7 @@ export default function Home() {
           display: "flex",
           gap: "10px",
           marginTop: "10px",
+          marginRight: "10px",
           alignItems: "baseline",
         })}
       >
