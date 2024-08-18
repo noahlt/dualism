@@ -93,6 +93,7 @@ const fileReducer: Reducer<FileState, FileAction> = (
   state: FileState,
   action: FileAction,
 ) => {
+  console.log("[fileReducer]", action);
   switch (action.type) {
     case "switch-language":
       return { ...state, lang: action.lang };
@@ -143,18 +144,19 @@ const fileReducer: Reducer<FileState, FileAction> = (
         ),
       };
 
-    case "save-generated-prose":
+    case "save-generated-prose": {
+      const lastBlock = state.blocks[state.blocks.length - 1];
+      const lastBlockIsEmpty = lastBlock.prose == "" && lastBlock.code == "";
       return {
         ...state,
-        blocks: state.blocks.flatMap((block, index) => {
+        blocks: state.blocks.flatMap((block) => {
           if (block.id === action.id) {
             const nextBlock: Block = {
               ...block,
               prose: action.prose,
               state: INERT,
             };
-            const isLast = index === state.blocks.length - 1;
-            if (isLast) {
+            if (block.id === lastBlock.id && !lastBlockIsEmpty) {
               return [nextBlock, makeNewBlock()];
             } else {
               return [nextBlock];
@@ -164,19 +166,21 @@ const fileReducer: Reducer<FileState, FileAction> = (
           }
         }),
       };
+    }
 
-    case "save-generated-code":
+    case "save-generated-code": {
+      const lastBlock = state.blocks[state.blocks.length - 1];
+      const lastBlockIsEmpty = lastBlock.prose == "" && lastBlock.code == "";
       return {
         ...state,
-        blocks: state.blocks.flatMap((block, index) => {
+        blocks: state.blocks.flatMap((block) => {
           if (block.id === action.id) {
             const nextBlock: Block = {
               ...block,
               code: action.code,
               state: INERT,
             };
-            const isLast = index === state.blocks.length - 1;
-            if (isLast) {
+            if (block.id === lastBlock.id && !lastBlockIsEmpty) {
               return [nextBlock, makeNewBlock()];
             } else {
               return [nextBlock];
@@ -186,6 +190,7 @@ const fileReducer: Reducer<FileState, FileAction> = (
           }
         }),
       };
+    }
 
     default:
       return state;

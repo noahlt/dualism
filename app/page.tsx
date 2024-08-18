@@ -61,10 +61,12 @@ export default function Home() {
             const lang = e.target.value;
             if (isLanguage(lang)) dFile({ type: "switch-language", lang });
             file.blocks.forEach(async (block) => {
-              const id = block.id;
-              dFile({ type: "finish-edit-prose", id });
-              const data = await generate({ prose: block.prose, lang });
-              dFile({ type: "save-generated-code", id, code: data.code });
+              if (block.prose) {
+                const id = block.id;
+                dFile({ type: "finish-edit-prose", id });
+                const data = await generate({ prose: block.prose, lang });
+                dFile({ type: "save-generated-code", id, code: data.code });
+              }
             });
           }}
         />

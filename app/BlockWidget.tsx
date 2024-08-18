@@ -2,7 +2,6 @@ import { Language } from "@/lib/lang";
 import { DynamicTextarea } from "./DynamicTextarea";
 import { Block, FileDispatcher } from "./blocksReducer";
 import { css } from "@/styled-system/css";
-import { sourceCodeStyle } from "./styles";
 import { useState } from "react";
 
 import CodeMirror from "@uiw/react-codemirror";
