@@ -1,12 +1,6 @@
-import { css } from "@/styled-system/css";
-import { sourceCodeStyle } from "./styles";
-import { Language } from "@/lib/lang";
+import { Language, getLanguageExtension } from "@/lib/lang";
 import { FileState } from "./blocksReducer";
-import CodeMirror, { EditorView } from "@uiw/react-codemirror";
-import { javascript } from "@codemirror/lang-javascript";
-import { python } from "@codemirror/lang-python";
-import { shell } from "@codemirror/legacy-modes/mode/shell";
-import { StreamLanguage } from "@codemirror/language";
+import CodeMirror from "@uiw/react-codemirror";
 
 function commentPrefix(lang: Language) {
   switch (lang) {
@@ -20,13 +14,6 @@ function commentPrefix(lang: Language) {
       return "// ";
   }
 }
-
-const extensions = [
-  javascript({ jsx: true }),
-  python(),
-  StreamLanguage.define(shell),
-];
-
 export function ExportSource({ file }: { file: FileState }) {
   const source = file.blocks
     .filter((b) => b.prose !== "" || b.code !== "")
@@ -36,7 +23,7 @@ export function ExportSource({ file }: { file: FileState }) {
     <CodeMirror
       value={source}
       height="auto"
-      extensions={extensions}
+      extensions={getLanguageExtension(file.lang)}
       readOnly={true}
       basicSetup={{
         lineNumbers: false,
