@@ -1,6 +1,7 @@
-import { Language, getLanguageExtension } from "@/lib/lang";
+import { Language } from "@/lib/lang";
 import { FileState } from "./blocksReducer";
 import CodeMirror from "@uiw/react-codemirror";
+import { dualismTheme, getLanguageExtension } from "@/lib/codemirror";
 
 function commentPrefix(lang: Language) {
   switch (lang) {
@@ -23,6 +24,7 @@ export function ExportSource({ file }: { file: FileState }) {
     <CodeMirror
       value={source}
       height="auto"
+      theme={dualismTheme}
       extensions={getLanguageExtension(file.lang)}
       readOnly={true}
       basicSetup={{

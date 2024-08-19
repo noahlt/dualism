@@ -1,10 +1,11 @@
-import { Language, getLanguageExtension } from "@/lib/lang";
+import { Language } from "@/lib/lang";
 import { DynamicTextarea } from "./DynamicTextarea";
 import { Block, FileDispatcher } from "./blocksReducer";
 import { css } from "@/styled-system/css";
 import { useState } from "react";
 
 import CodeMirror from "@uiw/react-codemirror";
+import { dualismTheme, getLanguageExtension } from "@/lib/codemirror";
 
 export function BlockWidget({
   block,
@@ -88,6 +89,7 @@ export function BlockWidget({
         value={code}
         height="auto"
         readOnly={block.state === "generating-code"}
+        theme={dualismTheme}
         extensions={getLanguageExtension(lang)}
         basicSetup={{
           lineNumbers: false,
