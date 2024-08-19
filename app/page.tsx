@@ -6,7 +6,7 @@ import {
   FileState,
   makeInitFileState,
 } from "./blocksReducer";
-import { ChangeEventHandler, useState } from "react";
+import { ChangeEventHandler, PropsWithChildren, useState } from "react";
 import { AllLanguages, Language, isLanguage } from "@/lib/lang";
 import { BlockWidget, generate } from "./BlockWidget";
 import { linkColor } from "./styles";
@@ -28,54 +28,37 @@ export default function Home() {
       <div
         className={css({
           display: "flex",
-          gap: "10px",
-          marginTop: "10px",
-          marginRight: "10px",
+          flexDirection: ["column", "row"],
+          gap: [0, "10px"],
+          margin: "10px",
           alignItems: "baseline",
+          justifyContent: "space-between",
         })}
       >
-        <div
-          className={css({
-            fontSize: "2xl",
-            fontWeight: "bold",
-            marginLeft: "8px",
-            marginBottom: "10px",
-          })}
-        >
-          Dualism
-        </div>
-        <div>
-          <Link href="/about" className={navLinkStyles}>
-            About
-          </Link>
-        </div>
-        <div>
-          <a href="https://github.com/noahlt/dualism" className={navLinkStyles}>
-            GitHub
-          </a>
-        </div>
-        <div className={css({ flexGrow: 1 })} />
-        <LanguageSelector
-          value={file.lang}
-          onChange={(e) => {
-            const lang = e.target.value;
-            if (isLanguage(lang)) dFile({ type: "switch-language", lang });
-            file.blocks.forEach(async (block) => {
-              if (block.prose) {
-                const id = block.id;
-                dFile({ type: "finish-edit-prose", id });
-                const data = await generate({ prose: block.prose, lang });
-                dFile({ type: "save-generated-code", id, code: data.code });
-              }
-            });
-          }}
-        />
-        <ToggleWidget
-          mode={mode}
-          onToggle={() =>
-            setMode(mode === "notebook" ? "export-source" : "notebook")
-          }
-        />
+        <HeaderAndNav />
+        <Toolbar>
+          <LanguageSelector
+            value={file.lang}
+            onChange={(e) => {
+              const lang = e.target.value;
+              if (isLanguage(lang)) dFile({ type: "switch-language", lang });
+              file.blocks.forEach(async (block) => {
+                if (block.prose) {
+                  const id = block.id;
+                  dFile({ type: "finish-edit-prose", id });
+                  const data = await generate({ prose: block.prose, lang });
+                  dFile({ type: "save-generated-code", id, code: data.code });
+                }
+              });
+            }}
+          />
+          <ToggleWidget
+            mode={mode}
+            onToggle={() =>
+              setMode(mode === "notebook" ? "export-source" : "notebook")
+            }
+          />
+        </Toolbar>
       </div>
       {mode === "notebook" ? (
         <Notebook file={file} dFile={dFile} />
@@ -86,9 +69,50 @@ export default function Home() {
   );
 }
 
+// dumb name but this just abstracts a flexbox row for the header bar
+function Toolbar({ children }: PropsWithChildren) {
+  return (
+    <div
+      className={css({
+        display: "flex",
+        flexDirection: "row",
+        gap: "10px",
+        alignItems: "baseline",
+      })}
+    >
+      {children}
+    </div>
+  );
+}
+
 const navLinkStyles = css(linkColor, {
   _hover: { borderBottom: "2px solid #6996f0" },
 });
+
+function HeaderAndNav() {
+  return (
+    <Toolbar>
+      <div
+        className={css({
+          fontSize: "2xl",
+          fontWeight: "bold",
+        })}
+      >
+        Dualism
+      </div>
+      <div>
+        <Link href="/about" className={navLinkStyles}>
+          About
+        </Link>
+      </div>
+      <div>
+        <a href="https://github.com/noahlt/dualism" className={navLinkStyles}>
+          GitHub
+        </a>
+      </div>
+    </Toolbar>
+  );
+}
 
 function LanguageSelector({
   value,
