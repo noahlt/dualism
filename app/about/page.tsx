@@ -1,6 +1,6 @@
 import { css } from "@/styled-system/css";
-import Link from "next/link";
-import { PropsWithChildren } from "react";
+import IntLink from "next/link";
+import { AnchorHTMLAttributes, PropsWithChildren } from "react";
 import { linkColor } from "../styles";
 
 // TODO these styles should really be recipes: https://panda-css.com/docs/concepts/recipes#config-recipe
@@ -21,6 +21,24 @@ const P = ({ children }: PropsWithChildren) => (
   <p className={css({ margin: "1em 0" })}>{children}</p>
 );
 
+const UL = ({ children }: PropsWithChildren) => <ul>{children}</ul>;
+
+const LI = ({ children }: PropsWithChildren) => (
+  <li className={css({ listStyleType: "circle", margin: "1em 0 1em 1.5em" })}>
+    {children}
+  </li>
+);
+
+const ExtLink = ({
+  href,
+  children,
+  ...props
+}: AnchorHTMLAttributes<HTMLAnchorElement>) => (
+  <a href={href} className={css(linkColor)} {...props}>
+    {children}
+  </a>
+);
+
 export default function About() {
   return (
     <div
@@ -32,9 +50,9 @@ export default function About() {
     >
       <h1 className={h1Class}>
         About{" "}
-        <Link href="/" className={css(linkColor)}>
+        <IntLink href="/" className={css(linkColor)}>
           Dualism
-        </Link>
+        </IntLink>
       </h1>
       <P>
         Dualism is a prototype LLM-assisted code editor modelled after notebooks
@@ -69,9 +87,9 @@ export default function About() {
       </P>
       <P>
         Enough yapping,{" "}
-        <Link href="/" className={css(linkColor)}>
+        <IntLink href="/" className={css(linkColor)}>
           go play with Dualism
-        </Link>
+        </IntLink>
         !
       </P>
 
@@ -81,29 +99,29 @@ export default function About() {
         (which was my original motivation), but it has many limitations and room
         for improvement:
       </P>
-      <ul>
-        <li>
+      <UL>
+        <LI>
           user code is structured as a list of pairs, but really it should be a
           tree of pairs. You should be able to generate a looping construct and
           then add prompt/code pairs as child nodes of the loop.
-        </li>
-        <li>
+        </LI>
+        <LI>
           many many basic editor features are missing, such as selecting entire
           blocks, inserting blocks between others (rather than just appending),
           etc
-        </li>
-        <li>
+        </LI>
+        <LI>
           possibly the prompt for each code block should include all surrounding
           code so that, eg, the LLM knew what variables are in scope. Not sure
           about this one.
-        </li>
-        <li>there is no saving or persistence of any kind</li>
-        <li>
+        </LI>
+        <LI>there is no saving or persistence of any kind</LI>
+        <LI>
           minor syntactic issues, eg: when generating typescript, the imports go
           at the top of each block. The Typescript exporter needs to hoist all
           imports to the top of the exported source.
-        </li>
-      </ul>
+        </LI>
+      </UL>
       <P>
         If you’re interested in tinkering, check out{" "}
         <a className={css(linkColor)} href="https://github.com/noahlt/dualism">
@@ -111,6 +129,25 @@ export default function About() {
         </a>
         !
       </P>
+
+      <h2 className={h2Class}>Implementation details</h2>
+      <P>
+        Dualism uses Claude Sonnet to generate code. The{" "}
+        <ExtLink href="https://github.com/noahlt/dualism/blob/main/app/i/generate/route.ts#L25">
+          prompts
+        </ExtLink>{" "}
+        took some tweaking but pretty reliably do what I want. I have some{" "}
+        <ExtLink href="https://github.com/noahlt/dualism/blob/main/app/i/generate/route.ts#L88">
+          cleanup functions
+        </ExtLink>{" "}
+        that remove extraneous code (exports, markdown backticks) that it
+        sometimes generates.
+      </P>
+      <P>
+        The rest is pretty standard frontend web code. I use Next.js with Panda
+        CSS and host it on Render.
+      </P>
+
       <h2 className={h2Class}>About me</h2>
       <P>
         I’m Noah Tye. I love programming tools and I’m frustrated that the

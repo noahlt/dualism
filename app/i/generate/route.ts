@@ -10,19 +10,14 @@ export async function POST(request: Request) {
   if (!isLanguage(lang)) {
     return Response.json({ error: "Invalid language" }, { status: 400 });
   }
-  const style = "";
-  // this is a silly hack but it does help, I think
-  // const style =
-  //   lang === "Typescript" || lang === "Javascript"
-  //     ? " in a functional style"
-  //     : "";
+
   let msgs;
   if (req.prose) {
     msgs = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
       temperature: 0,
-      system: `Respond with a fragment of ${lang} code following best practices${style}. Respond only with code, without preamble or explanation. Do not include usage examples.`,
+      system: `Respond with a fragment of ${lang} code following best practices. Respond only with code, without preamble or explanation. Do not include usage examples.`,
       messages: [
         {
           role: "user",

@@ -36,7 +36,7 @@ export default function Home() {
         })}
       >
         <HeaderAndNav />
-        <Toolbar>
+        <div className={css(toolbarStyles)}>
           <LanguageSelector
             value={file.lang}
             onChange={(e) => {
@@ -58,7 +58,7 @@ export default function Home() {
               setMode(mode === "notebook" ? "export-source" : "notebook")
             }
           />
-        </Toolbar>
+        </div>
       </div>
       {mode === "notebook" ? (
         <Notebook file={file} dFile={dFile} />
@@ -70,20 +70,12 @@ export default function Home() {
 }
 
 // dumb name but this just abstracts a flexbox row for the header bar
-function Toolbar({ children }: PropsWithChildren) {
-  return (
-    <div
-      className={css({
-        display: "flex",
-        flexDirection: "row",
-        gap: "10px",
-        alignItems: "baseline",
-      })}
-    >
-      {children}
-    </div>
-  );
-}
+const toolbarStyles = {
+  display: "flex",
+  flexDirection: "row",
+  gap: "10px",
+  alignItems: "baseline",
+};
 
 const navLinkStyles = css(linkColor, {
   _hover: { borderBottom: "2px solid #6996f0" },
@@ -91,11 +83,12 @@ const navLinkStyles = css(linkColor, {
 
 function HeaderAndNav() {
   return (
-    <Toolbar>
+    <div className={css(toolbarStyles, { width: "100%" })}>
       <div
         className={css({
           fontSize: "2xl",
           fontWeight: "bold",
+          flexGrow: [1, 0],
         })}
       >
         Dualism
@@ -110,7 +103,7 @@ function HeaderAndNav() {
           GitHub
         </a>
       </div>
-    </Toolbar>
+    </div>
   );
 }
 
