@@ -74,12 +74,16 @@ export default function About() {
       </P>
       <P>
         With Dualism, you can go back and iterate on the prompt, regenerating
-        the code response until you get just right.
+        the code response until you get it just right.
       </P>
       <P>
         Dualism also does away with the chat interface. No more asking ChatGPT
         to “please generate code to […]”. It also provides an export view, which
         formats your prompts as code comments.
+      </P>
+      <P>
+        Finally, you can actually edit the generated code and regenerate the
+        prose description of it. (Hence, “dualism”.)
       </P>
       <P>
         This is a working prototype, but it really is a prototype: its purpose
