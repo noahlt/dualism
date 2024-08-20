@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import PlausibleProvider from "next-plausible";
 import "./globals.css";
-import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,13 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Head>
-        <script
-          defer
-          data-domain="dualism.dev"
-          src="https://plausible.io/js/script.js"
-        ></script>
-      </Head>
+      <head>
+        <PlausibleProvider domain="example.com" />
+      </head>
       <body className={inter.className}>{children}</body>
     </html>
   );
