@@ -11,9 +11,8 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid language" }, { status: 400 });
   }
 
-  let msgs;
   if (req.prose) {
-    msgs = await anthropic.messages.create({
+    const codeMsgs = anthropic.messages.stream({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
       temperature: 0,
@@ -30,13 +29,39 @@ export async function POST(request: Request) {
         },
       ],
     });
-    const result = extractLLMResult(msgs);
-    if (result instanceof Response) {
-      return result; // it's an error
-    }
-    return Response.json({ code: cleanCode(result) });
+    // const result = extractLLMResult(codeMsgs);
+    // if (result instanceof Response) {
+    //   return result; // error, extractLLMResult returns an error response for us
+    // }
+    const downstream = new ReadableStream({
+      async start(controller) {
+        let accumulatedText = "";
+        for await (const msg of codeMsgs) {
+          if (msg.type === "content_block_delta") {
+            if (msg.delta.type === "text_delta") {
+              accumulatedText += msg.delta.text;
+              controller.enqueue(
+                JSON.stringify({
+                  text: cleanCode(accumulatedText),
+                }) + "\n",
+              );
+            } else {
+              console.log("TODO: handle message delta type:", msg.delta.type);
+            }
+          } else if (msg.type === "message_stop") {
+            controller.enqueue(
+              JSON.stringify({ text: cleanCode(accumulatedText) }) + "\n",
+            );
+          } else {
+            console.log("TODO: unhandled message type", msg.type);
+          }
+        }
+        controller.close();
+      },
+    });
+    return new Response(downstream, { status: 200 });
   } else if (req.code) {
-    msgs = await anthropic.messages.create({
+    const msgs = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
       temperature: 0,
@@ -55,9 +80,9 @@ export async function POST(request: Request) {
     });
     const result = extractLLMResult(msgs);
     if (result instanceof Response) {
-      return result; // it's an error
+      return result; // error, extractLLMResult returns an error response for us
     }
-    return Response.json({ prose: cleanComment(result) });
+    return Response.json({ prose: result });
   } else {
     return NextResponse.json(
       { error: "No prose or code provided" },
@@ -80,36 +105,51 @@ function extractLLMResult(msgs: Anthropic.Messages.Message): string | Response {
   return msgs.content[0].text;
 }
 
+function partialPrefixMatch(str: string, prefix: string): boolean {
+  for (let i = 0; i < prefix.length && i < str.length; i++) {
+    if (str[i] !== prefix[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function cleanCode(code: string): string {
   let codeLines = code.split("\n");
+  if (codeLines.length > 0 && partialPrefixMatch(codeLines[0], "```")) {
+    codeLines = codeLines.slice(1);
+  }
   if (
-    codeLines[0].startsWith("```") &&
-    codeLines[codeLines.length - 1].startsWith("```")
+    codeLines.length > 0 &&
+    partialPrefixMatch(codeLines[codeLines.length - 1], "```")
   ) {
-    codeLines = codeLines.slice(1, codeLines.length - 1);
+    codeLines = codeLines.slice(0, codeLines.length - 1);
   }
   // bash cleanup
-  if (codeLines[0].startsWith("#!/")) {
+  if (codeLines.length > 0 && partialPrefixMatch(codeLines[0], "#!/")) {
     codeLines = codeLines.slice(1);
   }
   // js cleanup
-  if (codeLines[codeLines.length - 1].startsWith("export default")) {
+  if (
+    codeLines.length > 0 &&
+    partialPrefixMatch(codeLines[codeLines.length - 1], "export default")
+  ) {
     codeLines = codeLines.slice(0, codeLines.length - 1);
   }
   // trim empty leading/trailing lines
-  while (codeLines[0] === "") {
+  while (codeLines.length > 0 && codeLines[0] === "") {
     codeLines = codeLines.slice(1);
   }
-  while (codeLines[codeLines.length - 1] === "") {
+  while (codeLines.length > 0 && codeLines[codeLines.length - 1] === "") {
     codeLines = codeLines.slice(0, codeLines.length - 1);
   }
   return codeLines.join("\n");
 }
 
-function cleanComment(comment: string): string {
-  // remove leading comment syntax like # or //
-  return comment
-    .split("\n")
-    .map((line) => line.replace(/^[#\/]{1,2}\s*/, ""))
-    .join("\n");
-}
+// function cleanComment(comment: string): string {
+//   // remove leading comment syntax like # or //
+//   return comment
+//     .split("\n")
+//     .map((line) => line.replace(/^[#\/]{1,2}\s*/, ""))
+//     .join("\n");
+// }

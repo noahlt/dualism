@@ -47,7 +47,7 @@ export default function Home() {
                   const id = block.id;
                   dFile({ type: "finish-edit-prose", id });
                   const data = await generate({ prose: block.prose, lang });
-                  dFile({ type: "save-generated-code", id, code: data.code });
+                  dFile({ type: "save-generated-code", id, code: "TODO" });
                 }
               });
             }}
@@ -193,32 +193,6 @@ function Notebook({ file, dFile }: { file: FileState; dFile: FileDispatcher }) {
           />
         ))}
       </div>
-      {file.blocks.length === 0 && (
-        <div className={css({ textAlign: "right", marginTop: "10px" })}>
-          <button
-            className={css({
-              fontSize: "0.8em",
-              py: "5px",
-              px: "10px",
-              borderRadius: "10px",
-              backgroundColor: "hsl(44, 0%, 95%)",
-              color: "#666",
-              cursor: "pointer",
-              _hover: {
-                color: "#333",
-              },
-              _active: {
-                backgroundColor: "hsl(44, 0%, 90%)",
-              },
-            })}
-            onClick={() => {
-              dFile({ type: "load-examples" });
-            }}
-          >
-            Load ts examples
-          </button>
-        </div>
-      )}
     </>
   );
 }

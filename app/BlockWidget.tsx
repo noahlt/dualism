@@ -18,15 +18,6 @@ export function BlockWidget({
 }) {
   const [focused, setFocused] = useState(false);
 
-  let code = block.code;
-  if (block.state === "generating-code" && block.code === "") {
-    code = "(generating...)";
-  }
-  let prose = block.prose;
-  if (block.state === "generating-prose" && block.prose === "") {
-    prose = "(generating...)";
-  }
-
   const sharedTextareaCSS = {
     width: "100%",
     paddingTop: "5px",
@@ -64,7 +55,7 @@ export function BlockWidget({
           backgroundImage: "url('/prose-icon.svg')",
           color: `rgba(0, 0, 0, ${block.state !== "editing-code" ? 1 : 0.5})`,
         })}
-        value={prose}
+        value={block.prose}
         onChange={(e) =>
           dBlocks({ type: "edit-prose", id: block.id, prose: e.target.value })
         }
@@ -72,21 +63,50 @@ export function BlockWidget({
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             dBlocks({ type: "finish-edit-prose", id: block.id });
-            const data = await generate({ prose: block.prose, lang });
-            dBlocks({
-              type: "save-generated-code",
-              id: block.id,
-              code: data.code,
+            const resp = await fetch("/i/generate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ prose: block.prose, lang }),
             });
+            if (!resp.body) {
+              // TODO: save error in a real place and render properly
+              dBlocks({
+                type: "save-generated-code",
+                id: block.id,
+                code: "!ERROR response type",
+              });
+              return;
+            }
+
+            const utf8 = new TextDecoder("utf-8");
+            //@ts-expect-error - not sure why TS doesn't like this
+            for await (const chunk of resp.body) {
+              const lines = utf8.decode(chunk).split("\n");
+              const lastLine = lines.findLast((l) => l !== "") ?? '{"text":""}';
+              const data = JSON.parse(lastLine);
+              if (data.text) {
+                dBlocks({
+                  type: "save-generated-code",
+                  id: block.id,
+                  code: data.text,
+                });
+              } else {
+                dBlocks({
+                  type: "save-generated-code",
+                  id: block.id,
+                  code: "!ERROR json parse:" + data,
+                });
+              }
+            }
           }
         }}
-        placeholder="prompt for code..."
+        placeholder="Prompt for code..."
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
       <CodeMirror
         className="dualismtheme"
-        value={code}
+        value={block.code}
         height="auto"
         readOnly={block.state === "generating-code"}
         theme={dualismTheme}
@@ -103,11 +123,11 @@ export function BlockWidget({
           if (e.key === "Enter" && e.shiftKey) {
             e.preventDefault();
             dBlocks({ type: "finish-edit-code", id: block.id });
-            const data = await generate({ code: block.code, lang });
+            // const data = await generate({ code: block.code, lang });
             dBlocks({
               type: "save-generated-prose",
               id: block.id,
-              prose: data.prose,
+              prose: "nope",
             });
           }
         }}
@@ -124,5 +144,5 @@ export async function generate(data: unknown) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  return resp.json();
+  return resp.body;
 }

@@ -93,7 +93,7 @@ const fileReducer: Reducer<FileState, FileAction> = (
   state: FileState,
   action: FileAction,
 ) => {
-  console.log("[fileReducer]", action);
+  // console.log("[fileReducer]", action);
   switch (action.type) {
     case "switch-language":
       return { ...state, lang: action.lang };
