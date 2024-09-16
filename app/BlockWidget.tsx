@@ -2,10 +2,72 @@ import { Language } from "@/lib/lang";
 import { DynamicTextarea } from "./DynamicTextarea";
 import { Block, FileDispatcher } from "./blocksReducer";
 import { css } from "@/styled-system/css";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { keymap } from "@uiw/react-codemirror";
 import { dualismTheme, getLanguageExtension } from "@/lib/codemirror";
+
+export async function generate(
+  req: { prose: string; lang: string } | { code: string; lang: string },
+  blockId: string,
+  dFile: FileDispatcher,
+) {
+  dFile({ type: "finish-editing", id: blockId });
+  const dest = "prose" in req ? ("code" as const) : ("prose" as const);
+  console.log("generating", dest);
+  var resp;
+  try {
+    resp = await fetch("/i/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req),
+    });
+  } catch (e) {
+    console.log("error fetching response", e);
+    dFile({
+      type: "save",
+      id: blockId,
+      [dest]: "[error fetching response]", // TODO: save error in real place and render properly
+    });
+    return;
+  }
+  if (!resp?.body) {
+    // TODO: save error in a real place and render properly
+    dFile({
+      type: "save",
+      id: blockId,
+      [dest]: "[error fetching response]",
+    });
+    return;
+  }
+
+  const utf8 = new TextDecoder("utf-8");
+  //@ts-expect-error - not sure why TS doesn't like this
+  for await (const chunk of resp.body) {
+    const lines = utf8.decode(chunk).split("\n");
+    const lastLine = lines.findLast((l) => l !== "");
+    if (!lastLine) continue; // TODO: nicely render "generating" message
+    try {
+      const data = JSON.parse(lastLine);
+      console.log("updating", dest, data);
+      dFile({
+        type: "update-generated",
+        id: blockId,
+        [dest]: data[dest],
+      });
+    } catch {
+      console.error("error parsing json", lastLine);
+      dFile({
+        type: "save",
+        id: blockId,
+        [dest]: "[error parsing json]", // TODO: nicely render error message
+      });
+    }
+  }
+
+  console.log("saving", blockId);
+  dFile({ type: "save", id: blockId });
+}
 
 export function BlockWidget({
   block,
@@ -17,16 +79,6 @@ export function BlockWidget({
   dBlocks: FileDispatcher;
 }) {
   const [focused, setFocused] = useState(false);
-
-  const sharedTextareaCSS = {
-    width: "100%",
-    paddingTop: "5px",
-    paddingLeft: "32px",
-    lineHeight: "1.2em",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "left 11px top 9px",
-    _focus: { outline: "none" },
-  };
 
   return (
     <div
@@ -51,7 +103,14 @@ export function BlockWidget({
         />
       )}
       <DynamicTextarea
-        className={css(sharedTextareaCSS, {
+        className={css({
+          width: "100%",
+          paddingTop: "5px",
+          paddingLeft: "32px",
+          lineHeight: "1.2em",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "left 11px top 9px",
+          _focus: { outline: "none" },
           backgroundImage: "url('/prose-icon.svg')",
           color: `rgba(0, 0, 0, ${block.state !== "editing-code" ? 1 : 0.5})`,
         })}
@@ -62,42 +121,7 @@ export function BlockWidget({
         onKeyDown={async (e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            dBlocks({ type: "finish-edit-prose", id: block.id });
-            const resp = await fetch("/i/generate", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ prose: block.prose, lang }),
-            });
-            if (!resp.body) {
-              // TODO: save error in a real place and render properly
-              dBlocks({
-                type: "save-generated-code",
-                id: block.id,
-                code: "!ERROR response type",
-              });
-              return;
-            }
-
-            const utf8 = new TextDecoder("utf-8");
-            //@ts-expect-error - not sure why TS doesn't like this
-            for await (const chunk of resp.body) {
-              const lines = utf8.decode(chunk).split("\n");
-              const lastLine = lines.findLast((l) => l !== "") ?? '{"text":""}';
-              const data = JSON.parse(lastLine);
-              if (data.text) {
-                dBlocks({
-                  type: "save-generated-code",
-                  id: block.id,
-                  code: data.text,
-                });
-              } else {
-                dBlocks({
-                  type: "save-generated-code",
-                  id: block.id,
-                  code: "!ERROR json parse:" + data,
-                });
-              }
-            }
+            generate({ prose: block.prose, lang }, block.id, dBlocks);
           }
         }}
         placeholder="Prompt for code..."
@@ -122,13 +146,7 @@ export function BlockWidget({
         onKeyDown={async (e) => {
           if (e.key === "Enter" && e.shiftKey) {
             e.preventDefault();
-            dBlocks({ type: "finish-edit-code", id: block.id });
-            // const data = await generate({ code: block.code, lang });
-            dBlocks({
-              type: "save-generated-prose",
-              id: block.id,
-              prose: "nope",
-            });
+            generate({ code: block.code, lang }, block.id, dBlocks);
           }
         }}
         onFocus={() => setFocused(true)}
@@ -136,13 +154,4 @@ export function BlockWidget({
       />
     </div>
   );
-}
-
-export async function generate(data: unknown) {
-  const resp = await fetch("/i/generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  return resp.body;
 }

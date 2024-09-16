@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   }
 
   if (req.prose) {
-    const codeMsgs = anthropic.messages.stream({
+    const msgs = anthropic.messages.stream({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
       temperature: 0,
@@ -29,28 +29,22 @@ export async function POST(request: Request) {
         },
       ],
     });
-    // const result = extractLLMResult(codeMsgs);
-    // if (result instanceof Response) {
-    //   return result; // error, extractLLMResult returns an error response for us
-    // }
     const downstream = new ReadableStream({
       async start(controller) {
-        let accumulatedText = "";
-        for await (const msg of codeMsgs) {
+        let entireText = "";
+        for await (const msg of msgs) {
           if (msg.type === "content_block_delta") {
             if (msg.delta.type === "text_delta") {
-              accumulatedText += msg.delta.text;
+              entireText += msg.delta.text;
               controller.enqueue(
-                JSON.stringify({
-                  text: cleanCode(accumulatedText),
-                }) + "\n",
+                "\n" + JSON.stringify({ code: cleanCode(entireText) }),
               );
             } else {
               console.log("TODO: handle message delta type:", msg.delta.type);
             }
           } else if (msg.type === "message_stop") {
             controller.enqueue(
-              JSON.stringify({ text: cleanCode(accumulatedText) }) + "\n",
+              "\n" + JSON.stringify({ code: cleanCode(entireText) }),
             );
           } else {
             console.log("TODO: unhandled message type", msg.type);
@@ -61,11 +55,11 @@ export async function POST(request: Request) {
     });
     return new Response(downstream, { status: 200 });
   } else if (req.code) {
-    const msgs = await anthropic.messages.create({
+    const msgs = await anthropic.messages.stream({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
       temperature: 0,
-      system: `Respond with prose that would be a useful, concise comment to add before this ${lang} code. Respond with only the text content of the comment, no explanation or syntax.`,
+      system: `Respond with prose that would be a useful, concise comment to add before this ${lang} code. Respond in imperative tense, like "Calculate the value". Respond with only the text content of the comment, no explanation or syntax.`,
       messages: [
         {
           role: "user",
@@ -78,31 +72,37 @@ export async function POST(request: Request) {
         },
       ],
     });
-    const result = extractLLMResult(msgs);
-    if (result instanceof Response) {
-      return result; // error, extractLLMResult returns an error response for us
-    }
-    return Response.json({ prose: result });
+    const downstream = new ReadableStream({
+      async start(controller) {
+        let entireText = "";
+        for await (const msg of msgs) {
+          if (msg.type === "content_block_delta") {
+            if (msg.delta.type === "text_delta") {
+              entireText += msg.delta.text;
+              controller.enqueue(
+                "\n" + JSON.stringify({ prose: cleanComment(entireText) }),
+              );
+            } else {
+              console.log("TODO: handle message delta type:", msg.delta.type);
+            }
+          } else if (msg.type === "message_stop") {
+            controller.enqueue(
+              "\n" + JSON.stringify({ prose: cleanComment(entireText) }),
+            );
+          } else {
+            console.log("TODO: unhandled message type", msg.type);
+          }
+        }
+        controller.close();
+      },
+    });
+    return new Response(downstream, { status: 200 });
   } else {
     return NextResponse.json(
       { error: "No prose or code provided" },
       { status: 400 },
     );
   }
-}
-
-function extractLLMResult(msgs: Anthropic.Messages.Message): string | Response {
-  if (msgs.content.length > 1) {
-    return Response.json(
-      { error: "Multiple messages in response??" },
-      { status: 400 },
-    );
-  }
-  if (msgs.content[0].type !== "text") {
-    console.error("NEED TO HANDLE NON-TEXT MESSAGE");
-    return Response.json({ error: "Non-text message" }, { status: 400 });
-  }
-  return msgs.content[0].text;
 }
 
 function partialPrefixMatch(str: string, prefix: string): boolean {
@@ -146,10 +146,10 @@ function cleanCode(code: string): string {
   return codeLines.join("\n");
 }
 
-// function cleanComment(comment: string): string {
-//   // remove leading comment syntax like # or //
-//   return comment
-//     .split("\n")
-//     .map((line) => line.replace(/^[#\/]{1,2}\s*/, ""))
-//     .join("\n");
-// }
+function cleanComment(comment: string): string {
+  // remove leading comment syntax like # or //
+  return comment
+    .split("\n")
+    .map((line) => line.replace(/^[#\/]{1,2}\s*/, ""))
+    .join("\n");
+}

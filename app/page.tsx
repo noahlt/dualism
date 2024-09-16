@@ -44,10 +44,7 @@ export default function Home() {
               if (isLanguage(lang)) dFile({ type: "switch-language", lang });
               file.blocks.forEach(async (block) => {
                 if (block.prose) {
-                  const id = block.id;
-                  dFile({ type: "finish-edit-prose", id });
-                  const data = await generate({ prose: block.prose, lang });
-                  dFile({ type: "save-generated-code", id, code: "TODO" });
+                  await generate({ prose: block.prose, lang }, block.id, dFile);
                 }
               });
             }}

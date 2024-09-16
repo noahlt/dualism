@@ -58,8 +58,9 @@ export type FileAction =
   | { type: "edit-code"; id: string; code: string }
   | { type: "finish-edit-prose"; id: string }
   | { type: "finish-edit-code"; id: string }
-  | { type: "save-generated-prose"; id: string; prose: string }
-  | { type: "save-generated-code"; id: string; code: string };
+  | { type: "update-generated"; id: string; code?: string; prose?: string }
+  | { type: "finish-editing"; id: string }
+  | { type: "save"; id: string; code?: string; prose?: string };
 
 function makeID(prefix: string): string {
   const characters =
@@ -144,49 +145,55 @@ const fileReducer: Reducer<FileState, FileAction> = (
         ),
       };
 
-    case "save-generated-prose": {
+    case "finish-editing": {
       const lastBlock = state.blocks[state.blocks.length - 1];
-      const lastBlockIsEmpty = lastBlock.prose == "" && lastBlock.code == "";
+      const blocks = state.blocks.map((block) => {
+        if (block.id === action.id) {
+          return { ...block, state: INERT } as const; // tsc needs "as const" to infer it's a Block
+        } else {
+          return block;
+        }
+      });
+      if (lastBlock.id === action.id) {
+        blocks.push(makeNewBlock());
+      }
+      return { ...state, blocks: blocks };
+    }
+
+    case "save": {
       return {
         ...state,
-        blocks: state.blocks.flatMap((block) => {
+        blocks: state.blocks.map((block) => {
           if (block.id === action.id) {
-            const nextBlock: Block = {
+            return {
               ...block,
-              prose: action.prose,
+              code: action.code ?? block.code,
+              prose: action.prose ?? block.prose,
               state: INERT,
             };
-            if (block.id === lastBlock.id && !lastBlockIsEmpty) {
-              return [nextBlock, makeNewBlock()];
-            } else {
-              return [nextBlock];
-            }
           } else {
-            return [block];
+            return block;
           }
         }),
       };
     }
 
-    case "save-generated-code": {
-      const lastBlock = state.blocks[state.blocks.length - 1];
-      const lastBlockIsEmpty = lastBlock.prose == "" && lastBlock.code == "";
+    case "update-generated": {
       return {
         ...state,
-        blocks: state.blocks.flatMap((block) => {
+        blocks: state.blocks.map((block) => {
           if (block.id === action.id) {
-            const nextBlock: Block = {
-              ...block,
-              code: action.code,
-              state: INERT,
-            };
-            if (block.id === lastBlock.id && !lastBlockIsEmpty) {
-              return [nextBlock, makeNewBlock()];
+            const code = action.code;
+            const prose = action.prose;
+            if (code) {
+              return { ...block, code, state: GENERATING_CODE };
+            } else if (prose) {
+              return { ...block, prose, state: GENERATING_PROSE };
             } else {
-              return [nextBlock];
+              return block; // this is valid but don't call it with neither code nor prose
             }
           } else {
-            return [block];
+            return block;
           }
         }),
       };
@@ -196,6 +203,8 @@ const fileReducer: Reducer<FileState, FileAction> = (
       return state;
   }
 };
+
+function reduceUpdateGenerated() {}
 
 // Custom hook to use the reducer
 export function useFileReducer(initialBlocks: FileState) {
