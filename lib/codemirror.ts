@@ -54,8 +54,8 @@ export const dualismTheme = createTheme({
 const langExts: Map<Language, LanguageSupport | StreamLanguage<unknown>> =
   new Map();
 
-langExts.set("Javascript", javascript({ jsx: true }));
-langExts.set("Typescript", javascript({ jsx: true }));
+langExts.set("JavaScript", javascript({ jsx: true }));
+langExts.set("TypeScript", javascript({ jsx: true }));
 langExts.set("Python", python());
 langExts.set("Bash", StreamLanguage.define(shell));
 
