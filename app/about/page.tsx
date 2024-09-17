@@ -81,15 +81,21 @@ export default function About() {
         the code response until you get it just right.
       </P>
       <P>
-        Dualism also does away with the chat interface. No more asking ChatGPT
-        to “please generate code to […]”. It also provides an export view, which
+        Dualism also does away with the chat conceit. No more asking ChatGPT to
+        “please generate code to […]”. It also provides an export view, which
         concatenates all the cells and formats your prompts as code comments.
       </P>
       <P>
-        Finally, you can actually edit the generated code and regenerate the
-        prose description of it. (Hence, “dualism”.) This is for those cases
-        where it’s easier to reach in and make a small edit directly to the
-        code, and ensures the prompt and code always stay in sync.
+        You can also edit the generated code and regenerate its prose
+        description. (Hence, “dualism”.) This is for those cases where it’s
+        easier to reach in and make a small edit directly to the code, and
+        ensures the prompt and code always stay in sync.
+      </P>
+      <P>
+        Finally, you can switch languages even after the code has been
+        generated, in which case the code is regenerated in the new language.
+        This is particularly useful for shell scripts which have crossed the
+        complexity threshold to justify writing them in Python.
       </P>
       <P>
         This is a working prototype, but it really is a prototype: its purpose
@@ -154,8 +160,16 @@ export default function About() {
         sometimes generates.
       </P>
       <P>
-        The rest is pretty standard frontend web code. I use Next.js with Panda
-        CSS and host it on Render.
+        The rest is pretty standard frontend web code, written in{" "}
+        <ExtLink href="https://www.typescriptlang.org/">TypeScript</ExtLink>{" "}
+        with <ExtLink href="https://nextjs.org/">Next.js</ExtLink> and{" "}
+        <ExtLink href="https://panda-css.com/">Panda CSS</ExtLink>, hosted on{" "}
+        <ExtLink href="https://render.com/">Render</ExtLink>. The code editor is{" "}
+        <ExtLink href="https://codemirror.net/">CodeMirror</ExtLink> using the{" "}
+        <ExtLink href="https://uiwjs.github.io/react-codemirror/">
+          UIW React wrapper
+        </ExtLink>
+        .
       </P>
 
       <h2 className={h2Class}>About me</h2>

@@ -8,7 +8,7 @@ const GENERATING_CODE = "generating-code";
 const GENERATING_PROSE = "generating-prose";
 
 export const EXAMPLE_BLOCKS: FileState = {
-  lang: "Typescript" as const,
+  lang: "TypeScript" as const,
   blocks: [
     {
       id: "b_1",
@@ -84,7 +84,7 @@ function makeNewBlock(): Block {
 
 export function makeInitFileState(): FileState {
   return {
-    lang: "Typescript",
+    lang: "TypeScript",
     blocks: [makeNewBlock()],
   };
 }
@@ -203,8 +203,6 @@ const fileReducer: Reducer<FileState, FileAction> = (
       return state;
   }
 };
-
-function reduceUpdateGenerated() {}
 
 // Custom hook to use the reducer
 export function useFileReducer(initialBlocks: FileState) {

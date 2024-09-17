@@ -9,8 +9,8 @@ function commentPrefix(lang: Language) {
       return "# ";
     case "Python":
       return "# ";
-    case "Typescript":
-    case "Javascript":
+    case "TypeScript":
+    case "JavaScript":
     default:
       return "// ";
   }

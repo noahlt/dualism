@@ -1,9 +1,9 @@
-export type Language = "Bash" | "Python" | "Typescript" | "Javascript";
+export type Language = "Bash" | "Python" | "TypeScript" | "JavaScript";
 export const AllLanguages = [
   "Bash",
   "Python",
-  "Typescript",
-  "Javascript",
+  "TypeScript",
+  "JavaScript",
 ] as const;
 
 export function isLanguage(lang: string): lang is Language {
