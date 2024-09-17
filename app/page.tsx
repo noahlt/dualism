@@ -118,9 +118,14 @@ function LanguageSelector({
           height: "auto",
           fontSize: "0.9em",
           padding: "2px",
-          paddingRight: "8px",
+          paddingLeft: "8px",
+          paddingRight: "20px",
           borderRadius: "5px",
           border: "1px solid #aaa",
+          WebkitAppearance: "none",
+          background: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50px' height='50px'><polyline points='46.139,15.518 25.166,45.49 4.193,15.519' fill='gray'/></svg>") right no-repeat`,
+          backgroundPosition: "right 4px top 6px",
+          backgroundSize: "12px 12px",
         })}
         value={value}
         onChange={onChange}
