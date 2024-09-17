@@ -70,12 +70,12 @@ export default function Home() {
 const toolbarStyles = {
   display: "flex",
   flexDirection: "row",
-  gap: "10px",
+  gap: "20px",
   alignItems: "baseline",
 };
 
 const navLinkStyles = css(linkColor, {
-  _hover: { borderBottom: "2px solid #6996f0" },
+  _hover: { borderTop: "2px solid #6996f0", paddingTop: "2px" },
 });
 
 function HeaderAndNav() {
@@ -92,7 +92,7 @@ function HeaderAndNav() {
       </div>
       <div>
         <Link href="/about" className={navLinkStyles}>
-          About
+          What is this?
         </Link>
       </div>
       <div>

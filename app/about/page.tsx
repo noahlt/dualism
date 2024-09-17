@@ -49,14 +49,16 @@ export default function About() {
       })}
     >
       <h1 className={h1Class}>
-        About{" "}
+        What is{" "}
         <IntLink href="/" className={css(linkColor)}>
           Dualism
         </IntLink>
+        ?
       </h1>
       <P>
-        Dualism is a prototype LLM-assisted code editor modelled after notebooks
-        and interactive consoles.
+        Dualism is a prototype LLM-assisted code editor modelled after
+        notebooks, designed to facilitate iterating on generated code by editing
+        the prompt and regenerating.
       </P>
 
       <h2 className={h2Class}>Motivation</h2>
@@ -137,11 +139,11 @@ export default function About() {
       <h2 className={h2Class}>Implementation details</h2>
       <P>
         Dualism uses Claude Sonnet to generate code. The{" "}
-        <ExtLink href="https://github.com/noahlt/dualism/blob/main/app/i/generate/route.ts#L25">
+        <ExtLink href="https://github.com/noahlt/dualism/blob/main/app/i/generate/route.ts#L19">
           prompts
         </ExtLink>{" "}
         took some tweaking but pretty reliably do what I want. I have some{" "}
-        <ExtLink href="https://github.com/noahlt/dualism/blob/main/app/i/generate/route.ts#L88">
+        <ExtLink href="https://github.com/noahlt/dualism/blob/main/app/i/generate/route.ts#L117">
           cleanup functions
         </ExtLink>{" "}
         that remove extraneous code (exports, markdown backticks) that it
